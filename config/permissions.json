@@ -1,0 +1,6 @@
+{
+  "safe_commands": ["git status", "git diff", "dir", "ls", "pwd"],
+  "blocked_patterns": ["rm -rf", "format ", "del /s", "rmdir /s", "cipher /w", ".env", "password", "secret", "api_key"],
+  "approval_patterns": ["git push", "git commit", "pip install", "npm install", "playwright install"]
+}
+

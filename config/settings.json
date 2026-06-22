@@ -1,0 +1,15 @@
+{
+  "assistant_name": "Tony",
+  "user_name": "Muhammad Afzal",
+  "wake_phrase": "Wake up Tony, Daddy's Home",
+  "ollama_base_url": "http://localhost:11434",
+  "ollama_model": "qwen3:4b",
+  "voice_enabled": true,
+  "whisper_model": "small",
+  "voice_record_seconds": 5,
+  "voice_sample_rate": 16000,
+  "default_shell": "powershell",
+  "require_approval_for_git_push": true,
+  "require_approval_for_git_commit": true,
+  "theme": "dark"
+}
