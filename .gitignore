@@ -9,5 +9,6 @@ venv/
 *.sqlite3
 tony/logs/*.log
 tony/logs/*.db
+tony/logs/voice/*.wav
+!tony/logs/voice/.gitkeep
 !tony/logs/.gitkeep
-

@@ -1,88 +1,197 @@
-# Tony AI Core v1
+<p align="center">
+  <img src="assets/banner.png" alt="Tony AI banner" width="860">
+</p>
 
-Tony is a free, local-first Windows laptop assistant for Muhammad Afzal. V1 is a typed desktop control center that can understand simple English, Urdu, Hindi, Roman Urdu, and Hinglish commands, run safe tools, use Git, open VS Code, call a local Ollama model, and keep local SQLite logs.
+<h1 align="center">Tony AI</h1>
 
-Official future wake phrase:
+<p align="center">
+  <strong>Local Voice-First Laptop Assistant for Windows</strong><br>
+  Aura/Jarvis-style desktop assistant for Muhammad Afzal.
+</p>
 
-```text
-Wake up Tony, Daddy's Home
-```
+<p align="center">
+  <img alt="Python" src="https://img.shields.io/badge/Python-3.11%2B-3776AB">
+  <img alt="PyQt6" src="https://img.shields.io/badge/UI-PyQt6-41CD52">
+  <img alt="Local AI" src="https://img.shields.io/badge/AI-Local%20First-00B4D8">
+  <img alt="Voice Assistant" src="https://img.shields.io/badge/Voice-Push%20to%20Talk-00A8E8">
+  <img alt="Windows" src="https://img.shields.io/badge/Windows-Supported-0078D4">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-pytest-brightgreen">
+  <img alt="License" src="https://img.shields.io/badge/License-Private%2FTBD-lightgrey">
+</p>
+
+## Overview
+
+Tony AI is a free/local Windows laptop assistant with typed commands, push-to-talk voice, wake phrase architecture, project/Git tools, workflow memory, and approval-gated screen awareness. Tony works text-first even if voice dependencies, microphone access, OCR, or optional local AI tools are missing.
+
+Tony does not use paid APIs and does not upload screenshots, recordings, secrets, or workflow memory.
 
 ## Features
 
-- PyQt6 desktop UI named Tony AI Control Center
-- Typed command input with chat-style output
-- Push-to-talk voice input button
-- Local faster-whisper speech-to-text foundation
-- Local pyttsx3 text-to-speech startup greeting
-- Rule-based mixed-language command parser
-- Local Ollama integration at `http://localhost:11434`
-- Safe shell execution through PowerShell
-- Git status, diff, log, commit, and push helpers
-- GitHub CLI detection and auth/repo helpers
-- SQLite memory for commands, tasks, approvals, and project history
-- Approval gate for risky actions
-- Block list for destructive commands and secret exposure
-- Wake phrase placeholder for later: `Wake up Tony, Daddy's Home`
+- Clean PyQt6 assistant UI with command input, Push to Talk, Wake Mode, Stop, and Settings.
+- Local speech-to-text foundation with `faster-whisper`, plus graceful fallback.
+- Local text-to-speech with `pyttsx3`.
+- Mixed English, Urdu, Hindi, Roman Urdu, and Hinglish command normalization.
+- Shared `AssistantBrain` pipeline for text, voice, and wake transcripts.
+- Safety levels: `SAFE`, `NEEDS_APPROVAL`, and `BLOCKED`.
+- Git/project tools for status, diff, analysis, run/test recommendations, and local workflows.
+- GitHub CLI helpers that work locally and handle missing `gh`.
+- Business/report/prompt drafting only; Tony does not auto-send messages.
+- V6 Vision Mode with approval-gated local screenshots.
+- Observe Mode and Teach Mode, both approval-first and local-only.
+- SQLite memory/logs under `tony/logs/`.
+- Release QA scripts, health checks, command simulations, and CI workflow.
 
-## Setup
+## Screenshots
 
-Install Python 3.11 or newer, then from this folder:
+| Dashboard | Voice Mode |
+| --- | --- |
+| ![Dashboard](docs/screenshots/dashboard.png) | ![Voice Mode](docs/screenshots/voice_mode.png) |
+
+| Command Test | Voice Setup |
+| --- | --- |
+| ![Command Test](docs/screenshots/command_test.png) | ![Voice Setup](docs/screenshots/settings_voice_setup.png) |
+
+## Demo Commands
+
+```text
+repo status dikhao
+VS Code kholo
+terminal kholo
+project analyze karo
+git push karo
+rm -rf project
+.env read karo
+client message banao
+Tony screen dekho
+Tony watch me
+Tony workflows dikhao
+```
+
+Wake phrases:
+
+```text
+Wake Up, Tony!
+Wake up Tony, Daddy's Home
+```
+
+## Installation
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 
-Install Ollama from https://ollama.com, then install the default local model:
+Optional local model support:
 
 ```powershell
 ollama pull qwen3:4b
 ```
 
-Tony will still launch if Ollama is not running. It will show:
+Tony still launches when Ollama is not running.
 
-```text
-Ollama is not running. Start Ollama and install a model, then try again.
-```
-
-Voice support is optional at runtime. If `faster-whisper`, `sounddevice`, `pyttsx3`, the microphone, or the local Whisper model is missing, Tony shows a helpful fallback message and keeps the text UI working.
-
-## Run
+## Running Tony
 
 ```powershell
 python run_tony.py
 ```
 
-Startup message:
+Startup greeting:
 
 ```text
 Welcome back, Muhammad Afzal. Tony is online.
 ```
 
-## Example Commands
+## Voice Setup
 
-```text
-repo status dikhao
-VS Code kholo
-git diff dikhao
-git push karo
-rm -rf project
-Tony, backend start karo
-client ko professional English message likh do
+Voice uses local/free tools:
+
+- `sounddevice` for microphone recording
+- `scipy` for WAV writing
+- `faster-whisper` for speech-to-text
+- `pyttsx3` for text-to-speech
+
+Tony remains usable with typed commands if voice is unavailable. Use Settings -> Check Voice Setup, or run:
+
+```powershell
+python scripts/mic_test.py
+python scripts/test_voice_transcripts.py
 ```
 
-For voice, click `Voice Input`, speak for the configured recording window, and Tony will show the recognized text before executing anything.
+## Testing
 
-## Safety Notes
+```powershell
+python -m pytest tests
+python scripts/health_check.py
+python scripts/test_tony_commands.py
+python scripts/test_voice_transcripts.py
+python scripts/prepare_release.py
+python scripts/prepare_pr_summary.py
+```
 
-Tony does not use paid APIs, cloud AI APIs, private keys, or automatic messaging. It asks for approval before risky actions like `git push`, `git commit`, package installs, file editing, and unknown shell scripts. Voice commands go through the same safety checks as typed commands, and risky voice actions require typed or spoken `yes`.
+Reports are saved under:
+
+```text
+tony/logs/test_reports/
+```
+
+## Safety System
+
+Tony asks approval before risky actions such as:
+
+- `git push`, `git commit`, dependency installs
+- running project scripts
+- screenshots, observe mode, teach mode
+- workflow replay, mouse/keyboard control
+- GitHub write actions
+
+Tony blocks dangerous/private actions such as:
+
+- `rm -rf`, `del /s`, destructive file actions
+- `.env`, API keys, tokens, secrets
+- password/OTP/2FA recording
+- banking/payment screens
+- automatic email/message sending
+- force push and reset hard
+
+## Project Structure
+
+```text
+tony/
+  core/      Assistant brain, safety, memory, workflow context
+  tools/     Git, GitHub, project, business, screen, workflow tools
+  ui/        PyQt6 desktop interface
+  voice/     STT, TTS, wake phrase, voice setup
+config/      Settings and permissions
+docs/        Safety, commands, release, testing, vision, teach mode
+scripts/     QA, release, mic, screenshots, asset generation
+tests/       Automated pytest suite
+```
 
 ## Roadmap
 
 - V1: Text-first local desktop agent
-- V2: Push-to-talk local voice foundation, wake phrase placeholder, STT, TTS
-- V3: Laptop operator with careful app/window control
-- V4: GitHub and business workflow automation
-- V5: Advanced memory, routines, and multi-step workflows
+- V2: Push-to-talk voice foundation
+- V3: Laptop operator and project runner
+- V4: Live voice architecture and local recorders
+- V5: GitHub, business, reports, prompts, workflows
+- V6: Vision Mode, Observe Mode, Teach Mode, workflow memory
+- V7: Workflow editor, safer replay previews, packaged installer
+
+## Release Notes
+
+Current version: `1.0.0`
+
+See [CHANGELOG.md](CHANGELOG.md) and [docs/RELEASE.md](docs/RELEASE.md).
+
+## Contributing
+
+Use real issues and pull requests only. Do not add features that bypass safety, approval, local-only storage, or secret handling rules.
+
+## License
+
+License is currently private/TBD. Add a formal license before public distribution.
+
+## Credits
+
+Built as Tony AI, a local-first Windows assistant for Muhammad Afzal.

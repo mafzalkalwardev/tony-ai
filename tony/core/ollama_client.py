@@ -6,8 +6,12 @@ from pathlib import Path
 import requests
 
 
+_CONFIG_DIR = Path(__file__).resolve().parent.parent.parent / "config"
+_SETTINGS_PATH = _CONFIG_DIR / "settings.json"
+
+
 class OllamaClient:
-    def __init__(self, settings_path: Path | str = "config/settings.json") -> None:
+    def __init__(self, settings_path: Path | str = _SETTINGS_PATH) -> None:
         self.settings = json.loads(Path(settings_path).read_text(encoding="utf-8"))
         self.base_url = self.settings.get("ollama_base_url", "http://localhost:11434").rstrip("/")
         self.model = self.settings.get("ollama_model", "qwen3:4b")
