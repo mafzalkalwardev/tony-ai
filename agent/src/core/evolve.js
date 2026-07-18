@@ -84,7 +84,7 @@ function evolveOnce({ writeBrain = true } = {}) {
 
   // Soft preference: Ultron identity
   try {
-    rememberFact("User runs Ultron personal assistant (Tony core) as their desktop AI", "profile", "evolve");
+    rememberFact("User runs TONY as their desktop personal AI assistant", "profile", "evolve");
   } catch {
     /* ignore */
   }

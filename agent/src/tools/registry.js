@@ -17,6 +17,7 @@ const {
   rebuildGraph,
   brainStats,
 } = require("../brain/obsidian");
+const { webSearch } = require("./webSearch");
 
 const TOOL_DEFS = [
   {
@@ -141,9 +142,21 @@ const TOOL_DEFS = [
   {
     type: "function",
     function: {
+      name: "web_search",
+      description: "Search the public web for up-to-date facts about people, companies, topics.",
+      parameters: {
+        type: "object",
+        properties: { query: { type: "string" }, limit: { type: "integer" } },
+        required: ["query"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
       name: "python_tool",
       description:
-        "Desktop control via Python bridge. Tools: git_*, list_dir, read_file, open_app, list_windows, focus_window, type_text, hotkey, mouse_click, screenshot, screen_context, camera_capture, desktop_status, shell_safe. Risky actions need approved=true.",
+        "PC control via pyautogui + Windows: open_app, type_text, hotkey, mouse_*, scroll, clipboard_*, copy_file, move_file, system_power (shutdown/restart/sleep/abort — needs approved=true + explicit ask). User ask = approved=true.",
       parameters: {
         type: "object",
         properties: {
@@ -159,7 +172,7 @@ const TOOL_DEFS = [
     type: "function",
     function: {
       name: "self_evolve",
-      description: "Run one Ultron self-improvement cycle: practice weak skills, write brain note, refresh graph.",
+      description: "Run one Tony self-improvement cycle: practice weak skills, write brain note, refresh graph.",
       parameters: { type: "object", properties: {} },
     },
   },
@@ -167,10 +180,17 @@ const TOOL_DEFS = [
     type: "function",
     function: {
       name: "voicebox_speak",
-      description: "Speak text with active Voicebox profile (Farman).",
+      description:
+        "Speak a short FRIENDLY line only (1–3 sentences). Never pass JSON, tool names, python_tool, or file paths — plain chat only.",
       parameters: {
         type: "object",
-        properties: { text: { type: "string" }, profile: { type: "string" } },
+        properties: {
+          text: { type: "string" },
+          profile: { type: "string" },
+          instruct: { type: "string" },
+          personality: { type: "boolean" },
+          wait: { type: "boolean" },
+        },
         required: ["text"],
       },
     },
@@ -227,14 +247,25 @@ async function executeTool(name, rawArgs) {
       return writeNote({ title: args.title, body: args.body, folder: args.folder });
     case "brain_rebuild":
       return rebuildGraph();
+    case "web_search":
+      return webSearch(args.query, { limit: args.limit || 5 });
     case "self_evolve":
       return require("../core/evolve").evolveAndLog();
     case "python_tool": {
-      const out = await callPythonTool(args.name, args.args || {}, { approved: Boolean(args.approved) });
+      // User intent often forgets approved — open/list helpers still need the flag from applyActionApproval
+      const approved = Boolean(args.approved);
+      const out = await callPythonTool(args.name, args.args || {}, { approved });
+      if (out && out.needs_approval && !approved) {
+        return {
+          ...out,
+          hint: "User asked to act — retry with approved=true for open_app / focus / type / click.",
+        };
+      }
       if (out && out.ok) {
         if (["screenshot", "screen_context", "camera_capture"].includes(args.name)) gainXp("vision", 5);
-        if (["list_windows", "desktop_status", "open_app", "focus_window", "type_text", "hotkey", "mouse_click"].includes(args.name)) {
+        if (["list_windows", "desktop_status", "open_app", "focus_window", "type_text", "hotkey", "mouse_click", "mouse_move", "scroll", "copy_file", "move_file", "clipboard_set", "system_power"].includes(args.name)) {
           gainXp("desktop_ops", 5);
+          gainXp("voice_command_execution", 3);
         }
         if (String(args.name || "").startsWith("git_")) gainXp("coding", 3);
       }
@@ -245,6 +276,8 @@ async function executeTool(name, rawArgs) {
         return await speak(args.text, {
           profile: args.profile,
           wait: args.wait === true,
+          personality: args.personality !== false,
+          instruct: args.instruct,
         });
       } catch (err) {
         return { ok: false, error: err.message, browserSpeak: true };

@@ -4,7 +4,7 @@
  * Detect language style and reply guidance for Urdu / Roman Urdu / English.
  */
 const ROMAN_URDU_RE =
-  /\b(kya|kyun|kyu|hai|hain|haan|han|nahi|nahin|naheen|kaise|kese|kaisay|karo|karna|krna|krdo|kardo|mujhe|mujh|mera|meri|mere|tum|tumhara|aap|ap|bhai|yaar|theek|theekhai|acha|accha|achha|samajh|samjha|batao|bata|sunao|suna|chahiye|chahye|please|pls|thora|thora|zara|jaldi|abhi|phir|lekin|magar|kyunki|kyunke|woh|wo|yeh|ye|iska|uska|wahan|yahan|kitna|kitni|kab|kahan|kahan|shukriya|mehrbani|meherbani|salam|assalam|walaikum|allah|inshallah|mashallah|scene|scene\s*kya|bol|bolo|baat|baatein|kar\s*do|de\s*do|bana\s*do|check\s*karo|dekho|suno)\b/i;
+  /\b(kya|kyun|kyu|hai|hain|haan|han|nahi|nahin|naheen|kaise|kese|kaisay|karo|karna|krna|krdo|kardo|mujhe|mujh|mera|meri|mere|tum|tumhara|aap|ap|bhai|yaar|theek|theekhai|acha|accha|achha|samajh|samjha|batao|bata|sunao|suna|chahiye|chahye|please|pls|thora|thora|zara|jaldi|abhi|phir|lekin|magar|kyunki|kyunke|woh|wo|yeh|ye|iska|uska|wahan|yahan|kitna|kitni|kab|kahan|kahan|shukriya|mehrbani|meherbani|salam|assalam|walaikum|allah|inshallah|mashallah|scene|scene\s*kya|bol|bolo|baat|baatein|kar\s*do|de\s*do|bana\s*do|check\s*karo|dekho|suno|kholo|khol|chalao|likho|dikhao|dekhao)\b/i;
 
 function detectLanguageStyle(text) {
   const t = String(text || "");

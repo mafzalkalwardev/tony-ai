@@ -65,7 +65,7 @@ function createWindow() {
     height: 860,
     minWidth: 960,
     minHeight: 640,
-    title: "ULTRON — Personal Assistant",
+    title: "TONY — Personal Assistant",
     backgroundColor: "#02060a",
     autoHideMenuBar: true,
     webPreferences: {
@@ -94,11 +94,11 @@ function createTray() {
   try {
     const img = nativeImage.createEmpty();
     tray = new Tray(img);
-    tray.setToolTip("ULTRON Personal Assistant");
+    tray.setToolTip("TONY Personal Assistant");
     tray.setContextMenu(
       Menu.buildFromTemplate([
         {
-          label: "Open ULTRON",
+          label: "Open TONY",
           click: () => {
             if (mainWindow) {
               mainWindow.show();
@@ -147,7 +147,7 @@ if (!gotLock) {
     createTray();
     if (!ready) {
       mainWindow.loadURL(
-        `data:text/html,<html><body style="background:#02060a;color:#6ed6c6;font-family:sans-serif;padding:2rem"><h1>ULTRON</h1><p>Starting Tony core… refresh in a moment.</p></body></html>`
+        `data:text/html,<html><body style="background:#02060a;color:#6ed6c6;font-family:sans-serif;padding:2rem"><h1>TONY</h1><p>Starting core… refresh in a moment.</p></body></html>`
       );
       setTimeout(() => mainWindow.loadURL(HUD), 5000);
     }

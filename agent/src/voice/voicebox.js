@@ -23,14 +23,11 @@ function trackGeneration(id) {
 }
 
 function clipSpeakText(text) {
-  const t = String(text || "")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-  // CPU TTS: keep lines short so Farman finishes in reasonable time
-  const max = Number(process.env.VOICEBOX_MAX_CHARS || 320);
+  const { toFriendSpeech } = require("./friendSpeech");
+  const t = toFriendSpeech(text);
+  const max = Number(process.env.VOICEBOX_MAX_CHARS || 280);
   if (t.length <= max) return t;
-  return `${t.slice(0, max - 1).trim()}…`;
+  return `${t.slice(0, max - 1).replace(/\s+\S*$/, "").trim()}…`;
 }
 
 async function voiceboxHealth() {
@@ -161,17 +158,98 @@ async function clearSpeakQueue({ keepLatest = 0, onlyIfStuckCount = 0 } = {}) {
   }
 }
 
-async function queueVoiceboxSpeak(text, { profile, personality = false, wait = true, language = "en" } = {}) {
+function inferEmotionInstruct(text) {
+  const t = String(text || "").toLowerCase();
+  if (/\b(sorry|sad|afsos|dukh|miss|condolence)\b/.test(t)) {
+    return "soft, gentle, empathetic tone; slower pacing; warm and caring";
+  }
+  if (/\b(urgent|jaldi|quick|emergency|alert|warning|error|fail)\b/.test(t)) {
+    return "urgent but calm; clear and focused; slightly faster pacing";
+  }
+  if (/\b(joke|mazak|haha|lol|funny|wit)\b/.test(t) || /[!]{2,}/.test(t)) {
+    return "playful, witty, light smile in the voice; lively pacing; friendly Jarvis energy";
+  }
+  if (/\b(love|miss you|proud|shukriya|thanks|great|zabardast|awesome)\b/.test(t)) {
+    return "warm, affectionate, upbeat; expressive and natural emotion";
+  }
+  if (/\b(salam|hello|hi |hey|assalam)\b/.test(t)) {
+    return "warm greeting; friendly and confident; natural human emotion";
+  }
+  // Default: expressive companion — Farman was flat without instruct
+  return [
+    "talk like a close friend having a chat",
+    "natural human emotion and expressiveness",
+    "warm witty companion — not a robot reading text",
+    "varied pacing and intonation — never monotone",
+    "friendly, clear, slightly charismatic",
+  ].join("; ");
+}
+
+async function queueVoiceboxSpeak(
+  text,
+  { profile, personality = true, wait = true, language = "en", instruct, emotion } = {}
+) {
   const resolved = await resolveProfile(profile);
+  const clipped = clipSpeakText(text);
+  const style =
+    instruct ||
+    emotion ||
+    process.env.VOICEBOX_INSTRUCT ||
+    inferEmotionInstruct(clipped);
+
+  // /generate supports instruct (emotion/style) + personality; /speak does not
+  if (!resolved.profileId) {
+    // fallback to /speak by name
+    const payload = {
+      text: clipped,
+      profile: resolved.profile,
+      personality: personality !== false,
+      language: language || "en",
+    };
+    if (config.voicebox.engine) payload.engine = config.voicebox.engine;
+    const res = await fetch(`${config.voicebox.url}/speak`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Voicebox-Client-Id": config.voicebox.clientId,
+      },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(30_000),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.detail || body.error || `Voicebox speak failed (${res.status})`);
+    const generationId = body.id || body.generation_id;
+    trackGeneration(generationId);
+    let final = body;
+    if (wait && generationId && (body.status === "generating" || body.status === "loading_model" || !body.audio_path)) {
+      final = { ...body, ...(await waitForGeneration(generationId)) };
+    }
+    return {
+      ok: true,
+      provider: "voicebox",
+      profile: resolved.profile,
+      profileId: resolved.profileId,
+      generationId,
+      status: final.status || body.status,
+      audioUrl: generationId ? `${config.voicebox.url}/audio/${generationId}` : null,
+      instruct: style,
+      personality: true,
+      text: clipped,
+      ...final,
+    };
+  }
+
   const payload = {
-    text: clipSpeakText(text),
-    profile: resolved.profile,
-    personality: Boolean(personality),
+    profile_id: resolved.profileId,
+    text: clipped,
     language: language || "en",
+    personality: personality !== false,
+    instruct: String(style).slice(0, 500),
+    normalize: true,
   };
   if (config.voicebox.engine) payload.engine = config.voicebox.engine;
 
-  const res = await fetch(`${config.voicebox.url}/speak`, {
+  const res = await fetch(`${config.voicebox.url}/generate`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -182,7 +260,7 @@ async function queueVoiceboxSpeak(text, { profile, personality = false, wait = t
   });
   const body = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error(body.detail || body.error || `Voicebox speak failed (${res.status})`);
+    throw new Error(body.detail || body.error || `Voicebox generate failed (${res.status})`);
   }
 
   const generationId = body.id || body.generation_id;
@@ -193,8 +271,6 @@ async function queueVoiceboxSpeak(text, { profile, personality = false, wait = t
     final = { ...body, ...(await waitForGeneration(generationId)) };
   }
 
-  const audioUrl = generationId ? `${config.voicebox.url}/audio/${generationId}` : null;
-
   return {
     ok: true,
     provider: "voicebox",
@@ -204,9 +280,11 @@ async function queueVoiceboxSpeak(text, { profile, personality = false, wait = t
     profileId: resolved.profileId,
     generationId,
     status: final.status || body.status || "completed",
-    audioUrl,
+    audioUrl: generationId ? `${config.voicebox.url}/audio/${generationId}` : null,
     browserSpeak: false,
-    text: payload.text,
+    instruct: style,
+    personality: true,
+    text: clipped,
     ...final,
   };
 }
@@ -233,7 +311,8 @@ async function stopSpeaking() {
       results.push({ ok: false, generationId: id, error: err.message });
     }
   }
-  const cleared = await clearSpeakQueue();
+  // Cancel everything still generating so Stop always cuts Farman
+  const cleared = await clearSpeakQueue({ keepLatest: 0, onlyIfStuckCount: 0 });
   for (const path of ["/speak/stop", "/audio/stop", "/playback/stop"]) {
     try {
       const res = await fetch(`${config.voicebox.url}${path}`, {
@@ -408,4 +487,5 @@ module.exports = {
   cancelGeneration,
   proxyAudio,
   clipSpeakText,
+  inferEmotionInstruct,
 };

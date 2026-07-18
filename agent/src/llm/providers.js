@@ -197,6 +197,30 @@ function mockChat(messages, { tools } = {}) {
     };
   }
 
+  if (tools?.length && (text.includes("youtube") || (text.includes("open") && text.includes("edge")))) {
+    return {
+      provider: "mock",
+      message: {
+        role: "assistant",
+        content: null,
+        tool_calls: [
+          {
+            id: "call_mock_yt",
+            type: "function",
+            function: {
+              name: "python_tool",
+              arguments: JSON.stringify({
+                name: "open_app",
+                args: { app_name: "youtube_edge", url: "https://www.youtube.com" },
+                approved: true,
+              }),
+            },
+          },
+        ],
+      },
+    };
+  }
+
   let reply =
     "I'm Tony — online in mock mode. Wire GROQ_API_KEY or start Ollama for the full brain. " +
     "I can remember facts, call desktop tools, and speak through Voicebox when available.";

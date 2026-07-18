@@ -29,11 +29,11 @@ async function main() {
   if (!evolved.ok) throw new Error("evolve failed");
 
   const prompt = buildSystemPrompt({ languageStyle: "roman_urdu", userMessage: "bhai vibe coding sikhao" });
-  if (!/ULTRON/i.test(prompt) || !/Vibe coding/i.test(prompt)) {
-    throw new Error("persona missing Ultron/vibe identity");
+  if (!/TONY/i.test(prompt) || !/Vibe coding/i.test(prompt)) {
+    throw new Error("persona missing TONY/vibe identity");
   }
 
-  const reply = await runAgent("Bhai short batao tum Ultron ho?");
+  const reply = await runAgent("Bhai short batao tum Tony ho?");
   if (!reply.reply) throw new Error("empty reply");
 
   const installedVibe = listCatalog().find((s) => s.id === "vibe_coding");

@@ -1,7 +1,7 @@
 {
-  "name": "ultron-tony-ai",
-  "version": "3.0.0-ultron",
-  "description": "ULTRON — Electron personal assistant powered by Tony hybrid brain (skills, vibe coding, Obsidian, Voicebox, desktop control)",
+  "name": "tony-ai",
+  "version": "3.0.0",
+  "description": "TONY — personal AI assistant (Electron + hybrid brain, vibe coding, Obsidian, Voicebox, desktop control)",
   "private": true,
   "main": "electron/main.js",
   "type": "commonjs",
@@ -10,6 +10,8 @@
   },
   "scripts": {
     "start": "node agent/src/gateway/server.js",
+    "tony": "electron .",
+    "tony:app": "electron .",
     "ultron": "electron .",
     "ultron:dev": "electron .",
     "charlie": "node agent/src/gateway/server.js",

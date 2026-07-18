@@ -58,9 +58,16 @@ PHASE3_TOOLS = [
     "type_text",
     "hotkey",
     "mouse_click",
+    "mouse_move",
+    "scroll",
+    "clipboard_get",
+    "clipboard_set",
+    "copy_file",
+    "move_file",
     "screenshot",
     "camera_capture",
     "desktop_status",
+    "system_power",
 ]
 
 
@@ -99,6 +106,12 @@ def _needs_approval(tool: str) -> bool:
         "type_text",
         "hotkey",
         "mouse_click",
+        "mouse_move",
+        "scroll",
+        "clipboard_set",
+        "copy_file",
+        "move_file",
+        "system_power",
     }
 
 
@@ -148,7 +161,8 @@ def run_tool(name: str, args: dict, approved: bool) -> dict:
         if not approved:
             return {"ok": False, "needs_approval": True, "error": "open_app requires approved=true"}
         app_name = args.get("app") or args.get("app_name") or "explorer"
-        text = apps.open_app(app_name, ws)
+        url = args.get("url")
+        text = apps.open_app(app_name, ws, url=url)
         return {"ok": True, "tool": name, "text": text}
 
     if name == "screen_context":
@@ -227,6 +241,44 @@ def run_tool(name: str, args: dict, approved: bool) -> dict:
             return {"ok": False, "needs_approval": True, "error": "mouse_click requires approved=true"}
         return desktop_click(args)
 
+    if name == "mouse_move":
+        if not approved:
+            return {"ok": False, "needs_approval": True, "error": "mouse_move requires approved=true"}
+        return desktop_move(args)
+
+    if name == "scroll":
+        if not approved:
+            return {"ok": False, "needs_approval": True, "error": "scroll requires approved=true"}
+        return desktop_scroll(args)
+
+    if name == "clipboard_get":
+        return desktop_clipboard_get()
+
+    if name == "clipboard_set":
+        if not approved:
+            return {"ok": False, "needs_approval": True, "error": "clipboard_set requires approved=true"}
+        return desktop_clipboard_set(args)
+
+    if name == "copy_file":
+        if not approved:
+            return {"ok": False, "needs_approval": True, "error": "copy_file requires approved=true"}
+        src = args.get("src") or args.get("source")
+        dest = args.get("dest") or args.get("destination")
+        if not src or not dest:
+            return {"ok": False, "error": "src and dest required"}
+        text = files.copy_file(src, dest)
+        return {"ok": True, "tool": name, "text": text}
+
+    if name == "move_file":
+        if not approved:
+            return {"ok": False, "needs_approval": True, "error": "move_file requires approved=true"}
+        src = args.get("src") or args.get("source")
+        dest = args.get("dest") or args.get("destination")
+        if not src or not dest:
+            return {"ok": False, "error": "src and dest required"}
+        text = files.move_file(src, dest)
+        return {"ok": True, "tool": name, "text": text}
+
     if name == "screenshot":
         decision = safety.classify("take screenshot", "take_screenshot")
         if decision.level == SafetyLevel.BLOCKED:
@@ -251,7 +303,78 @@ def run_tool(name: str, args: dict, approved: bool) -> dict:
             "phase": 4,
         }
 
+    if name == "system_power":
+        if not approved:
+            return {
+                "ok": False,
+                "needs_approval": True,
+                "error": "system_power requires approved=true (explicit user ask)",
+            }
+        return desktop_system_power(args)
+
     return {"ok": False, "error": f"unknown tool: {name}", "needs_approval": _needs_approval(name)}
+
+
+def desktop_system_power(args: dict) -> dict:
+    """Windows power control. Shutdown/restart use a cancelable delay by default."""
+    import subprocess
+
+    action = str(args.get("action") or args.get("mode") or "shutdown").lower().strip()
+    # Default 60s so user can abort with: shutdown /a  OR  "cancel shutdown"
+    delay = int(args.get("delay") if args.get("delay") is not None else 60)
+    delay = max(0, min(delay, 600))
+
+    try:
+        if action in {"abort", "cancel", "abort_shutdown", "cancel_shutdown"}:
+            subprocess.run(["shutdown", "/a"], check=False, capture_output=True, text=True)
+            return {
+                "ok": True,
+                "tool": "system_power",
+                "action": "abort",
+                "text": "Shutdown cancelled (if one was pending).",
+            }
+
+        if action in {"sleep", "suspend"}:
+            # Hibernate/sleep via powercfg / rundll — sleep
+            subprocess.Popen(
+                ["rundll32.exe", "powrprof.dll,SetSuspendState", "0", "1", "0"],
+                shell=False,
+            )
+            return {"ok": True, "tool": "system_power", "action": "sleep", "text": "Sleep requested."}
+
+        if action in {"restart", "reboot"}:
+            subprocess.run(
+                ["shutdown", "/r", "/t", str(delay), "/c", "TONY: restart scheduled"],
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+            return {
+                "ok": True,
+                "tool": "system_power",
+                "action": "restart",
+                "delay": delay,
+                "text": f"Restart in {delay}s. Say 'cancel shutdown' or run: shutdown /a",
+            }
+
+        if action in {"shutdown", "poweroff", "shut_down", "off"}:
+            subprocess.run(
+                ["shutdown", "/s", "/t", str(delay), "/c", "TONY: shutdown scheduled"],
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+            return {
+                "ok": True,
+                "tool": "system_power",
+                "action": "shutdown",
+                "delay": delay,
+                "text": f"Shutting down in {delay}s. Say 'cancel shutdown' or run: shutdown /a",
+            }
+
+        return {"ok": False, "error": f"unknown action: {action}. Use shutdown|restart|sleep|abort"}
+    except Exception as exc:  # noqa: BLE001
+        return {"ok": False, "error": str(exc)}
 
 
 def desktop_type_text(args: dict) -> dict:
@@ -305,6 +428,68 @@ def desktop_click(args: dict) -> dict:
         return {"ok": True, "tool": "mouse_click", "x": x, "y": y, "button": button}
     except Exception as exc:  # noqa: BLE001
         return {"ok": False, "error": str(exc)}
+
+
+def desktop_move(args: dict) -> dict:
+    try:
+        import pyautogui
+
+        x = int(args.get("x", 0))
+        y = int(args.get("y", 0))
+        duration = float(args.get("duration", 0.2))
+        pyautogui.moveTo(x, y, duration=max(0.0, min(duration, 2.0)))
+        return {"ok": True, "tool": "mouse_move", "x": x, "y": y}
+    except Exception as exc:  # noqa: BLE001
+        return {"ok": False, "error": str(exc)}
+
+
+def desktop_scroll(args: dict) -> dict:
+    try:
+        import pyautogui
+
+        clicks = int(args.get("clicks") or args.get("amount") or -3)
+        pyautogui.scroll(max(-20, min(20, clicks)))
+        return {"ok": True, "tool": "scroll", "clicks": clicks}
+    except Exception as exc:  # noqa: BLE001
+        return {"ok": False, "error": str(exc)}
+
+
+def desktop_clipboard_get() -> dict:
+    try:
+        import pyperclip  # type: ignore
+
+        text = pyperclip.paste()
+        return {"ok": True, "tool": "clipboard_get", "text": str(text)[:5000]}
+    except Exception:
+        try:
+            import subprocess
+
+            out = subprocess.check_output(["powershell", "-NoProfile", "-Command", "Get-Clipboard"], text=True)
+            return {"ok": True, "tool": "clipboard_get", "text": out[:5000]}
+        except Exception as exc:  # noqa: BLE001
+            return {"ok": False, "error": str(exc)}
+
+
+def desktop_clipboard_set(args: dict) -> dict:
+    text = str(args.get("text") or "")
+    if any(k in text.lower() for k in ("password", "otp", "api_key", "secret=", "bearer ")):
+        return {"ok": False, "error": "refused: looks like a secret"}
+    try:
+        import pyperclip  # type: ignore
+
+        pyperclip.copy(text)
+        return {"ok": True, "tool": "clipboard_set", "chars": len(text)}
+    except Exception:
+        try:
+            import subprocess
+
+            subprocess.run(
+                ["powershell", "-NoProfile", "-Command", f"Set-Clipboard -Value @'\n{text}\n'@"],
+                check=True,
+            )
+            return {"ok": True, "tool": "clipboard_set", "chars": len(text)}
+        except Exception as exc:  # noqa: BLE001
+            return {"ok": False, "error": str(exc)}
 
 
 def camera_capture(args: dict) -> dict:

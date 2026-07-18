@@ -82,13 +82,18 @@
     micState.textContent = `Voice → ${voiceSelect.value}`;
   });
 
+  let farmanAudio = null;
+  let speakAbort = false;
+
   btnStop?.addEventListener("click", async () => {
+    speakAbort = true;
     try {
       speechSynthesis.cancel();
     } catch { /* ignore */ }
     try {
       if (farmanAudio) {
         farmanAudio.pause();
+        farmanAudio.src = "";
         farmanAudio = null;
       }
     } catch { /* ignore */ }
@@ -229,6 +234,17 @@
     gsap.to(".o2", { x: -24, y: -18, duration: 8, yoyo: true, repeat: -1, ease: "sine.inOut" });
   }
 
+  function cleanReply(text) {
+    let t = String(text || "")
+      .replace(/<\s*[a-zA-Z_][a-zA-Z0-9_]*\b[^>]*>[\s\S]*?(?:<\/\s*[a-zA-Z_][a-zA-Z0-9_]*\s*>)?/gi, " ")
+      .replace(/<\s*python_tool\s*=\s*\{[\s\S]*?\}\s*>/gi, " ")
+      .replace(/\b(python_tool|brain_search|web_search|approved\s*=\s*true)\b/gi, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (!t || /^(working on it|…|\.+)$/i.test(t)) t = "Working on it…";
+    return t;
+  }
+
   function addBubble(role, text, meta) {
     const div = document.createElement("div");
     div.className = `bubble ${role === "user" ? "user" : "tony"}`;
@@ -238,7 +254,7 @@
       m.textContent = meta;
       div.appendChild(m);
     }
-    div.appendChild(document.createTextNode(text));
+    div.appendChild(document.createTextNode(role === "tony" ? cleanReply(text) : text));
     log.appendChild(div);
     log.scrollTop = log.scrollHeight;
     if (window.gsap) gsap.from(div, { y: 8, opacity: 0, duration: 0.3 });
@@ -248,13 +264,20 @@
     try {
       if (!speechSynthesis || !text) return;
       speechSynthesis.cancel();
-      speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+      // Don't read raw dumps out loud in the browser either
+      let t = cleanReply(text)
+        .replace(/```[\s\S]*?```/g, " ")
+        .replace(/\{[^{}]{0,400}\}/g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, 280);
+      if (!t || /[{}=_]{3,}/.test(t)) t = "Theek hai, main dekh liya.";
+      speechSynthesis.speak(new SpeechSynthesisUtterance(t));
     } catch { /* ignore */ }
   }
 
-  let farmanAudio = null;
   async function playFarmanAudio(generationId) {
-    if (!generationId) return false;
+    if (!generationId || speakAbort) return false;
     const url = `/api/voice/audio/${encodeURIComponent(generationId)}?token=${encodeURIComponent(token())}`;
     try {
       if (farmanAudio) {
@@ -271,6 +294,7 @@
   }
 
   async function waitAndPlayFarman(speech, reply) {
+    speakAbort = false;
     const gid = speech?.generationId || speech?.voicebox?.generationId;
     if (!gid) {
       browserSpeak(reply);
@@ -279,21 +303,27 @@
     }
     // CPU TTS blocks Voicebox for minutes — talk now, swap to Farman when ready
     browserSpeak(reply);
-    addBubble("tony", "(interim voice… Farman WAV load ho raha hai)", "voicebox");
+    addBubble("tony", "(interim voice… Farman emotion WAV load ho raha hai)", "voicebox");
     micState.textContent = "Farman synthesizing…";
     const started = Date.now();
     while (Date.now() - started < 420000) {
+      if (speakAbort) {
+        micState.textContent = "Stopped";
+        return;
+      }
       try {
         const st = await (await fetch(`/api/voice/generation/${encodeURIComponent(gid)}`, { headers: authHeaders() })).json();
+        if (speakAbort) return;
         if (st.soft) {
           await new Promise((r) => setTimeout(r, 3000));
           continue;
         }
         if (st.status === "completed") {
+          if (speakAbort) return;
           try { speechSynthesis.cancel(); } catch { /* ignore */ }
           const played = await playFarmanAudio(gid);
           micState.textContent = played ? `Speaking as ${speech.profile || selectedVoice()}` : "Farman ready";
-          addBubble("tony", played ? `(Farman voice playing)` : "(Farman WAV ready — click allow audio)", "voicebox");
+          addBubble("tony", played ? `(Farman · expressive)` : "(Farman WAV ready — click allow audio)", "voicebox");
           return;
         }
         if (st.status === "failed" || st.status === "cancelled") {
@@ -306,18 +336,21 @@
       }
       await new Promise((r) => setTimeout(r, 3000));
     }
-    micState.textContent = "Farman timeout — browser voice used";
+    if (!speakAbort) micState.textContent = "Farman timeout — browser voice used";
   }
 
   function ensureVoice(reply, speech) {
     if (!speakBox.checked || !reply) return;
+    if (/python_tool|<\s*python|approved\s*=/i.test(reply)) {
+      reply = "Ho gaya — action run kar diya.";
+    }
+    speakAbort = false;
     if (speech && speech.provider === "voicebox" && (speech.generationId || speech.voicebox?.generationId)) {
       waitAndPlayFarman(speech, reply);
       return;
     }
     if (speech && speech.ok && speech.provider === "python_tts") {
       addBubble("tony", "(Windows TTS — Farman/Voicebox down)", "audio");
-      // If bridge didn't actually play, still hear something
       if (!speech.local?.spoken) browserSpeak(reply);
       return;
     }
@@ -573,9 +606,9 @@
   micBtn.addEventListener("touchstart", (e) => { e.preventDefault(); startRec().catch((err) => { micState.textContent = err.message; }); }, { passive: false });
   micBtn.addEventListener("touchend", (e) => { e.preventDefault(); stopRec().catch(() => {}); });
 
-  addBubble("tony", "ULTRON online. Personal assistant · vibe coding · Obsidian brain. Hold mic, Stop anytime.", "boot");
+  addBubble("tony", "TONY online. Farman voice with emotion · Obsidian brain. Hold mic, Stop anytime.", "boot");
   if (window.ultron?.isElectron) {
-    addBubble("tony", "Electron shell detected — desktop Ultron mode.", "boot");
+    addBubble("tony", "Desktop app mode — still TONY.", "boot");
   }
   refreshHealth();
   refreshSkills();
