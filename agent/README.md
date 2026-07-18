@@ -1,39 +1,30 @@
-# Hybrid Tony
+# ULTRON + Tony
 
-## Phase status
+Personal AI assistant: Electron desktop shell + hybrid Node/Python brain.
 
-- **Phase 1** — ReAct brain, Voicebox hooks, memory, Python bridge
-- **Phase 2–3** — JARVIS HUD + desktop/vision tools
-- **Phase 4** — Skills matrix (learn / install / idle XP), Obsidian brain, Command Deck UI
-
-### Skills (44 catalog packs)
-
-Grouped playbooks Tony uses as an encyclopedia + project manager + creative partner + laptop operator:
-
-| Category | Examples |
-|----------|----------|
-| Core | info retrieval, translation, data analysis, writing, research |
-| Cognitive | context awareness, learning preferences, problem solving |
-| Human | empathy, debate/critical thinking, jokes |
-| Creative | content creation, storytelling, visual imagination, cultural literacy |
-| Laptop | voice commands, smart typing, navigation, files, desktop ops, vision |
-| Productivity | workflows, email, scheduling, research summarization, task automation |
-| Comfort | personalized shortcuts, adaptive habits, entertainment |
-| Coding | polyglot, frameworks, full-stack, APIs, bugfix |
-| Innovation | autonomous research, trends, self-updating knowledge, prototyping |
-| Autonomy | self-learning, error correction, knowledge expansion, idle optimization |
-
-- Teach custom skills via HUD **Teach Tony** or `learn_skill`
-- New catalog skills auto-sync into `data/skills/installed.json` on boot
-- Daemon idle-learns (~30m) → XP + vault notes under `vault/Agentic Brain/Skills/`
-- APIs: `GET /api/skills`, `POST /api/skills/learn`, `POST /api/skills/install`, `POST /api/skills/install-all`, `POST /api/skills/idle`
-
-## Run
+## Quick start
 
 ```powershell
-npm run live
+npm install
+npm run live          # bridge + gateway + daemon
+npm run ultron        # Electron app (starts stack if needed)
+npm run test:agent
+npm run test:ultron
 ```
 
-Open http://localhost:8787/ (hard refresh after UI updates).
+HUD: http://localhost:8787/ · token `tony-dev-token`
 
-Default token: `tony-dev-token`
+## Stack
+
+| Layer | Role |
+|-------|------|
+| **ULTRON (Electron)** | Desktop personal assistant window + tray |
+| **Tony gateway** | ReAct brain, skills, chat, voice APIs |
+| **Python bridge** | Desktop control (windows, type, click, screen) |
+| **Obsidian vault** | Agentic Brain knowledge graph |
+| **Voicebox** | Farman cloned voice (optional) |
+| **Evolve daemon** | Idle self-improvement (XP + vault notes) |
+
+## Skills
+
+50+ catalog packs including **vibe coding**, taste engineering, pair flow, Ultron Personal OS, and self-evolution. New catalog skills auto-sync on boot.

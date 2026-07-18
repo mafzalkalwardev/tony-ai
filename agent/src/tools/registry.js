@@ -158,6 +158,14 @@ const TOOL_DEFS = [
   {
     type: "function",
     function: {
+      name: "self_evolve",
+      description: "Run one Ultron self-improvement cycle: practice weak skills, write brain note, refresh graph.",
+      parameters: { type: "object", properties: {} },
+    },
+  },
+  {
+    type: "function",
+    function: {
       name: "voicebox_speak",
       description: "Speak text with active Voicebox profile (Farman).",
       parameters: {
@@ -219,6 +227,8 @@ async function executeTool(name, rawArgs) {
       return writeNote({ title: args.title, body: args.body, folder: args.folder });
     case "brain_rebuild":
       return rebuildGraph();
+    case "self_evolve":
+      return require("../core/evolve").evolveAndLog();
     case "python_tool": {
       const out = await callPythonTool(args.name, args.args || {}, { approved: Boolean(args.approved) });
       if (out && out.ok) {

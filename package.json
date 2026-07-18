@@ -1,14 +1,17 @@
 {
-  "name": "tony-ai",
-  "version": "2.2.0-phase4",
-  "description": "Hybrid Tony — Phase 4 skills learning + recharged command deck HUD",
+  "name": "ultron-tony-ai",
+  "version": "3.0.0-ultron",
+  "description": "ULTRON — Electron personal assistant powered by Tony hybrid brain (skills, vibe coding, Obsidian, Voicebox, desktop control)",
   "private": true,
+  "main": "electron/main.js",
   "type": "commonjs",
   "engines": {
     "node": ">=20"
   },
   "scripts": {
     "start": "node agent/src/gateway/server.js",
+    "ultron": "electron .",
+    "ultron:dev": "electron .",
     "charlie": "node agent/src/gateway/server.js",
     "charlie:watch": "node --watch agent/src/gateway/server.js",
     "tony:daemon": "node agent/src/daemon/index.js",
@@ -17,11 +20,15 @@
     "chat": "node agent/src/cli.js chat",
     "run": "node agent/src/cli.js run",
     "health": "node agent/src/cli.js health",
-    "test:agent": "node agent/scripts/smoke-test.js"
+    "test:agent": "node agent/scripts/smoke-test.js",
+    "test:ultron": "node agent/scripts/ultron-smoke.js"
   },
   "dependencies": {
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "electron": "^34.2.0"
   }
 }

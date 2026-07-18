@@ -3,6 +3,7 @@
 const { config } = require("../config");
 const { runDailyConsolidate, writeIdleSkillNote } = require("../memory/learner");
 const { acquireIdleSkill, skillsStats } = require("../skills/registry");
+const { evolveAndLog } = require("../core/evolve");
 const { voiceboxHealth } = require("../voice/voicebox");
 const { warmupVoicebox, modelsStatus } = require("../voice/warmup");
 const { bridgeHealth } = require("../bridge/client");
@@ -93,13 +94,32 @@ function startDaemon() {
 
   setInterval(() => {
     try {
-      const skill = acquireIdleSkill();
-      const note = writeIdleSkillNote("periodic_idle");
-      console.log("[daemon] idle skill", skill, note.notePath);
+      const evolved = evolveAndLog();
+      console.log("[daemon] evolve", {
+        themes: evolved.themes,
+        practiced: evolved.practiced,
+        note: evolved.note?.path,
+      });
     } catch (err) {
-      console.error("[daemon] idle skill failed", err.message);
+      console.error("[daemon] evolve failed", err.message);
+      try {
+        const skill = acquireIdleSkill();
+        const note = writeIdleSkillNote("periodic_idle");
+        console.log("[daemon] idle skill fallback", skill, note.notePath);
+      } catch (e2) {
+        console.error("[daemon] idle skill failed", e2.message);
+      }
     }
   }, 30 * 60 * 1000);
+
+  // First evolve shortly after boot
+  setTimeout(() => {
+    try {
+      console.log("[daemon] boot evolve", evolveAndLog());
+    } catch (err) {
+      console.error("[daemon] boot evolve failed", err.message);
+    }
+  }, 12_000);
 }
 
 if (require.main === module) {

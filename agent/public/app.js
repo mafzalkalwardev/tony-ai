@@ -573,7 +573,10 @@
   micBtn.addEventListener("touchstart", (e) => { e.preventDefault(); startRec().catch((err) => { micState.textContent = err.message; }); }, { passive: false });
   micBtn.addEventListener("touchend", (e) => { e.preventDefault(); stopRec().catch(() => {}); });
 
-  addBubble("tony", "Command deck online. Roman Urdu OK — Obsidian brain + graph active. Hold mic, Stop anytime.", "boot");
+  addBubble("tony", "ULTRON online. Personal assistant · vibe coding · Obsidian brain. Hold mic, Stop anytime.", "boot");
+  if (window.ultron?.isElectron) {
+    addBubble("tony", "Electron shell detected — desktop Ultron mode.", "boot");
+  }
   refreshHealth();
   refreshSkills();
   refreshBrain();

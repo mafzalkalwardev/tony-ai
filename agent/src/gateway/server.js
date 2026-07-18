@@ -23,6 +23,7 @@ const {
 } = require("../voice/voicebox");
 const { bridgeHealth } = require("../bridge/client");
 const { listCatalog, learnSkill, installSkill, installAllCatalog, skillsStats, acquireIdleSkill } = require("../skills/registry");
+const { evolveAndLog } = require("../core/evolve");
 const { warmupVoicebox, modelsStatus } = require("../voice/warmup");
 const { rebuildGraph, brainStats, searchBrain, relatedNodes } = require("../brain/obsidian");
 
@@ -116,6 +117,14 @@ function createApp() {
 
   app.post("/api/skills/install-all", auth, (_req, res) => {
     res.json(installAllCatalog());
+  });
+
+  app.post("/api/evolve", auth, (_req, res) => {
+    try {
+      res.json(evolveAndLog());
+    } catch (err) {
+      res.status(500).json({ ok: false, error: err.message });
+    }
   });
 
   app.post("/api/skills/idle", auth, (_req, res) => {

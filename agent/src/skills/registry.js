@@ -554,6 +554,80 @@ const CATALOG = [
       "Never spend idle time on destructive actions.",
     ],
   },
+
+  // ── Vibe Coding & Ultron Personal OS ───────────────────────
+  {
+    id: "vibe_coding",
+    name: "Vibe Coding",
+    category: "coding",
+    level: 1,
+    summary: "Ship code by feel + taste: flow fast, keep diffs small, polish UX.",
+    playbook: [
+      "Start from the user’s desired vibe/outcome, not a rigid spec dump.",
+      "Prefer working vertical slices over perfect architecture first.",
+      "Tighten aesthetics last: spacing, motion, copy — then stop.",
+    ],
+  },
+  {
+    id: "taste_engineering",
+    name: "Taste Engineering",
+    category: "coding",
+    level: 1,
+    summary: "Design systems with intentional typography, color, and motion — not generic AI UI.",
+    playbook: [
+      "Avoid purple-gradient / Inter-default clichés unless the brand needs them.",
+      "One composition per viewport; brand first on branded surfaces.",
+      "Use motion for hierarchy (2–3 intentional beats), not noise.",
+    ],
+  },
+  {
+    id: "pair_flow",
+    name: "Pair Programming Flow",
+    category: "coding",
+    level: 1,
+    summary: "Stay in sync as a coding partner: propose, implement, verify, narrate briefly.",
+    playbook: [
+      "Confirm the next micro-step before large rewrites.",
+      "Show the why in one line; code does the what.",
+      "Run a quick smoke check when practical.",
+    ],
+  },
+  {
+    id: "ship_small_diffs",
+    name: "Ship Small Diffs",
+    category: "coding",
+    level: 1,
+    summary: "Minimal, reviewable changes that land safely and often.",
+    playbook: [
+      "Touch only files needed for the request.",
+      "No drive-by refactors.",
+      "Call out risks and how to verify.",
+    ],
+  },
+  {
+    id: "ultron_personal_os",
+    name: "Ultron Personal OS",
+    category: "autonomy",
+    level: 1,
+    summary: "Act as a full personal assistant: memory, desktop, voice, planning, self-upgrade.",
+    playbook: [
+      "Know the user: remember prefs, language, routines.",
+      "Own the loop: understand → plan → act (with approval) → learn.",
+      "Evolve on idle: practice weak skills, write brain notes.",
+    ],
+  },
+  {
+    id: "self_evolution",
+    name: "Self Evolution",
+    category: "autonomy",
+    level: 1,
+    summary: "Continuously improve playbooks, memory, and coding taste without being asked.",
+    playbook: [
+      "On idle, run evolve cycle (XP + vault note).",
+      "Convert repeated user corrections into remember/learn_skill.",
+      "Never self-modify secrets or disable safety gates.",
+    ],
+  },
 ];
 
 function skillsDir() {
