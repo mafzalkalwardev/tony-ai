@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TONY · Command Deck</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="void" aria-hidden="true">
+    <canvas id="field"></canvas>
+    <div class="orb o1"></div>
+    <div class="orb o2"></div>
+    <div class="scan"></div>
+  </div>
+
+  <div class="deck">
+    <header class="topbar">
+      <div class="identity">
+        <div class="arc" id="arc">
+          <svg viewBox="0 0 64 64" width="56" height="56" aria-hidden="true">
+            <circle cx="32" cy="32" r="28" class="arc-track" />
+            <circle cx="32" cy="32" r="28" class="arc-progress" id="arcProgress" />
+            <circle cx="32" cy="32" r="10" class="arc-core" />
+          </svg>
+        </div>
+        <div>
+          <h1>TONY</h1>
+          <p class="sub">Command Deck · Obsidian brain · Roman Urdu</p>
+        </div>
+      </div>
+      <div class="chips" id="chips"></div>
+    </header>
+
+    <main class="workspace">
+      <section class="chat-pane">
+        <div class="pane-label">Conversation</div>
+        <div id="log" class="log" role="log" aria-live="polite"></div>
+      </section>
+
+      <section class="skills-pane">
+        <div class="pane-head">
+          <div class="pane-label">Skills Matrix</div>
+          <button type="button" class="mini" id="btnIdleLearn">Idle learn</button>
+        </div>
+        <div id="skillsList" class="skills-list"></div>
+        <div class="pane-head" style="margin-top:0.4rem">
+          <div class="pane-label">Obsidian Graph</div>
+          <button type="button" class="mini" id="btnBrainRebuild">Rebuild</button>
+        </div>
+        <canvas id="graphCanvas" class="graph-canvas" width="360" height="160" aria-label="Knowledge graph"></canvas>
+        <div id="brainStats" class="brain-stats">Brain loading…</div>
+        <form id="learnForm" class="learn-form">
+          <div class="pane-label">Teach Tony</div>
+          <input id="skillName" placeholder="Skill name" required />
+          <input id="skillSummary" placeholder="What it does" />
+          <textarea id="skillPlaybook" rows="3" placeholder="Steps (one per line)"></textarea>
+          <button type="submit">Learn skill</button>
+        </form>
+      </section>
+    </main>
+
+    <footer class="control">
+      <button type="button" id="mic" class="mic-orb" aria-label="Hold to talk">
+        <span class="pulse"></span>
+        <canvas id="wave" class="wave" width="88" height="36" aria-hidden="true"></canvas>
+        <strong id="micLabel">Hold</strong>
+      </button>
+      <div class="composer-wrap">
+        <form id="form" class="composer">
+          <input id="token" type="password" placeholder="Token" title="API token" />
+          <select id="voiceProfile" title="Voicebox profile" aria-label="Voice profile"></select>
+          <input id="message" type="text" placeholder="Ask Tony anything…" autocomplete="off" />
+          <label class="voice-tog"><input type="checkbox" id="speak" checked /> Farman voice</label>
+          <button type="button" class="stop-btn" id="btnStop" title="Stop speaking">Stop</button>
+          <button type="submit">Send</button>
+        </form>
+        <div class="toolbar">
+          <button type="button" class="mini" id="btnScreen">See screen</button>
+          <button type="button" class="mini" id="btnDesktop">Desktop status</button>
+          <button type="button" class="mini" id="btnSkills">Refresh skills</button>
+          <button type="button" class="mini" id="btnWarmup">Keep voice warm</button>
+          <button type="button" class="mini" id="btnClear">Clear</button>
+          <span id="micState" class="state">Ready</span>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.2/lib/anime.min.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

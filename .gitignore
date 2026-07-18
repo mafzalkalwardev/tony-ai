@@ -12,3 +12,11 @@ tony/logs/*.db
 tony/logs/voice/*.wav
 !tony/logs/voice/.gitkeep
 !tony/logs/.gitkeep
+node_modules/
+data/
+vault/Agentic Brain/Daily/
+vault/Agentic Brain/Skills/
+package-lock.json
+tools/voicebox/*.msi
+tools/voicebox/*.exe
+tools/voicebox/*.zip
