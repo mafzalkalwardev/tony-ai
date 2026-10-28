@@ -1,23 +1,70 @@
-<p align="center">
-  <img src="assets/banner.png" alt="Tony AI banner" width="860">
+<div align="center">
+
+# TONY AI
+
+<img src="https://readme-typing-svg.demolab.com?font=Inter&weight=700&size=28&duration=2800&pause=700&color=2563EB&center=true&vCenter=true&width=900&lines=Local+Voice-First+Windows+Assistant;Python+%2B+PyQt6+Desktop+Agent;Hands-free+laptop+control;Built+for+everyday+productivity" alt="Typing SVG" />
+
+<p>
+  <img src="https://komarev.com/ghpvc/?username=mafzalkalwardev&label=Project%20Views&color=2563eb&style=for-the-badge" alt="Project views" />
+  <img src="https://img.shields.io/github/stars/mafzalkalwardev/tony-ai?style=for-the-badge&color=22c55e" alt="GitHub stars" />
+  <img src="https://img.shields.io/github/forks/mafzalkalwardev/tony-ai?style=for-the-badge&color=f59e0b" alt="GitHub forks" />
+  <img src="https://img.shields.io/github/license/mafzalkalwardev/tony-ai?style=for-the-badge&color=64748b" alt="License" />
 </p>
 
-<h1 align="center">Tony AI</h1>
-
-<p align="center">
-  <strong>Local Voice-First Laptop Assistant for Windows</strong><br>
-  Aura/Jarvis-style desktop assistant for Muhammad Afzal.
+<p>
+  <img src="https://skillicons.dev/icons?i=python,qt,windows" alt="Skill icons" />
 </p>
 
-<p align="center">
-  <img alt="Python" src="https://img.shields.io/badge/Python-3.11%2B-3776AB">
-  <img alt="PyQt6" src="https://img.shields.io/badge/UI-PyQt6-41CD52">
-  <img alt="Local AI" src="https://img.shields.io/badge/AI-Local%20First-00B4D8">
-  <img alt="Voice Assistant" src="https://img.shields.io/badge/Voice-Push%20to%20Talk-00A8E8">
-  <img alt="Windows" src="https://img.shields.io/badge/Windows-Supported-0078D4">
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-pytest-brightgreen">
-  <img alt="License" src="https://img.shields.io/badge/License-Private%2FTBD-lightgrey">
+<p>
+  <strong>Local voice-first Windows laptop assistant built with Python and PyQt6 for voice commands and desktop productivity.</strong>
 </p>
+
+</div>
+
+---
+
+## Trophy Cards
+
+<div align="center">
+  <img src="https://github-profile-trophy.vercel.app/?username=mafzalkalwardev&theme=algolia&no-frame=true&no-bg=true&margin-w=12&margin-h=12&column=4" alt="GitHub trophy cards" />
+</div>
+
+---
+
+## Stats Cards
+
+<div align="center">
+  <img height="165" src="https://github-readme-stats-sigma-five.vercel.app/api?username=mafzalkalwardev&show_icons=true&theme=tokyonight&hide_border=true&rank_icon=github" alt="GitHub stats" />
+  <img height="165" src="https://github-readme-stats-sigma-five.vercel.app/api/top-langs/?username=mafzalkalwardev&layout=compact&theme=tokyonight&hide_border=true" alt="Top languages" />
+</div>
+
+---
+
+## Activity Graph
+
+<div align="center">
+  <img src="https://github-readme-activity-graph.vercel.app/graph?username=mafzalkalwardev&theme=react-dark&hide_border=true&area=true" alt="GitHub activity graph" />
+</div>
+
+---
+
+## Contribution Snake
+
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/mafzalkalwardev/google-voice-dispatch-agent/output/github-contribution-grid-snake-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/mafzalkalwardev/google-voice-dispatch-agent/output/github-contribution-grid-snake.svg">
+    <img alt="Contribution snake" src="https://raw.githubusercontent.com/mafzalkalwardev/google-voice-dispatch-agent/output/github-contribution-grid-snake.svg">
+  </picture>
+</div>
+
+---
+
+## SEO Keywords
+
+`voice assistant` `PyQt6` `Windows AI` `local agent`
+
+---
 
 ## Overview
 
